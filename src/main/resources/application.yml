@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: inovou-api
+  datasource:
+    url: jdbc:postgresql://localhost:5432/inovou
+    username: inovou
+    password: inovou
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

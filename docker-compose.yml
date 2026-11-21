@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: inovou-postgres
+    environment:
+      POSTGRES_DB: inovou
+      POSTGRES_USER: inovou
+      POSTGRES_PASSWORD: inovou
+    ports:
+      - "5432:5432"
+    volumes:
+      - inovou-data:/var/lib/postgresql/data
+
+volumes:
+  inovou-data:
+  
