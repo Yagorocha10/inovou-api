@@ -4,16 +4,16 @@ import br.com.inovou.store.domain.produto.Categoria;
 import br.com.inovou.store.domain.produto.ImagemProduto;
 import br.com.inovou.store.domain.produto.Produto;
 
-final class ProdutoPersistenceMapper {
+public final class ProdutoPersistenceMapper {
 
     private ProdutoPersistenceMapper() {
     }
 
-    static Categoria paraDominio(CategoriaJpaEntity entidade) {
+    public static Categoria paraDominio(CategoriaJpaEntity entidade) {
         return new Categoria(entidade.getId(), entidade.getNome(), entidade.getSlug());
     }
 
-    static Produto paraDominio(ProdutoJpaEntity entidade) {
+    public static Produto paraDominio(ProdutoJpaEntity entidade) {
         return new Produto(
                 entidade.getId(),
                 entidade.getNome(),

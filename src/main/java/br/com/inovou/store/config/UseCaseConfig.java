@@ -1,5 +1,6 @@
 package br.com.inovou.store.config;
 
+import br.com.inovou.store.application.port.out.CarrinhoRepositoryPort;
 import br.com.inovou.store.application.port.out.CategoriaRepositoryPort;
 import br.com.inovou.store.application.port.out.EnderecoRepositoryPort;
 import br.com.inovou.store.application.port.out.ProdutoRepositoryPort;
@@ -7,6 +8,7 @@ import br.com.inovou.store.application.port.out.SenhaEncoderPort;
 import br.com.inovou.store.application.port.out.TokenPort;
 import br.com.inovou.store.application.port.out.UsuarioRepositoryPort;
 import br.com.inovou.store.application.service.AutenticacaoService;
+import br.com.inovou.store.application.service.CarrinhoService;
 import br.com.inovou.store.application.service.CatalogoService;
 import br.com.inovou.store.application.service.CategoriaService;
 import br.com.inovou.store.application.service.EnderecoService;
@@ -41,5 +43,11 @@ public class UseCaseConfig {
     @Bean
     EnderecoService enderecoService(EnderecoRepositoryPort enderecoRepository) {
         return new EnderecoService(enderecoRepository);
+    }
+
+    @Bean
+    CarrinhoService carrinhoService(CarrinhoRepositoryPort carrinhoRepository,
+                                    ProdutoRepositoryPort produtoRepository) {
+        return new CarrinhoService(carrinhoRepository, produtoRepository);
     }
 }
