@@ -41,6 +41,11 @@ public class ProdutoPersistenceAdapter implements ProdutoRepositoryPort {
     }
 
     @Override
+    public Optional<Produto> buscarPorId(Long id) {
+        return produtoJpaRepository.findById(id).map(ProdutoPersistenceMapper::paraDominio);
+    }
+
+    @Override
     public List<Produto> buscarDisponiveisMaisRecentes(int limite) {
         PageRequest pageRequest = PageRequest.of(0, limite, ordenarPor(OrdenacaoProduto.MAIS_RECENTES));
         return produtoJpaRepository.findByAtivoTrueAndEstoqueGreaterThan(0, pageRequest).stream()

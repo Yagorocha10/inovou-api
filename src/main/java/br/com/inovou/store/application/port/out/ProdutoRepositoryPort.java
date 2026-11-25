@@ -14,5 +14,7 @@ public interface ProdutoRepositoryPort {
 
     Optional<Produto> buscarAtivoPorSlug(String slug);
 
+    Optional<Produto> buscarPorId(Long id);
+
     List<Produto> buscarDisponiveisMaisRecentes(int limite);
 }
