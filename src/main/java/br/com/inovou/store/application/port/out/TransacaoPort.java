@@ -1,0 +1,8 @@
+package br.com.inovou.store.application.port.out;
+
+import java.util.function.Supplier;
+
+public interface TransacaoPort {
+
+    <T> T executar(Supplier<T> operacao);
+}

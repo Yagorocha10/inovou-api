@@ -53,6 +53,18 @@ public class ProdutoPersistenceAdapter implements ProdutoRepositoryPort {
                 .toList();
     }
 
+    @Override
+    @Transactional
+    public boolean baixarEstoque(Long produtoId, int quantidade) {
+        return produtoJpaRepository.baixarEstoque(produtoId, quantidade) == 1;
+    }
+
+    @Override
+    @Transactional
+    public void reporEstoque(Long produtoId, int quantidade) {
+        produtoJpaRepository.reporEstoque(produtoId, quantidade);
+    }
+
     static Sort ordenarPor(OrdenacaoProduto ordenacao) {
         Sort criterio = switch (ordenacao) {
             case MAIS_RECENTES -> Sort.by(Sort.Direction.DESC, "criadoEm");

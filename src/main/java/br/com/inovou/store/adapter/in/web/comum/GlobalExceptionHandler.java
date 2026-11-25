@@ -4,6 +4,7 @@ import br.com.inovou.store.domain.exception.CredenciaisInvalidasException;
 import br.com.inovou.store.domain.exception.DomainException;
 import br.com.inovou.store.domain.exception.EmailJaCadastradoException;
 import br.com.inovou.store.domain.exception.EstoqueInsuficienteException;
+import br.com.inovou.store.domain.exception.TransicaoInvalidaException;
 import br.com.inovou.store.domain.exception.RecursoNaoEncontradoException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -50,6 +52,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(EstoqueInsuficienteException.class)
     ResponseEntity<ErroResponse> estoqueInsuficiente(EstoqueInsuficienteException excecao) {
         return responder(HttpStatus.CONFLICT, excecao.getMessage());
+    }
+
+    @ExceptionHandler(TransicaoInvalidaException.class)
+    ResponseEntity<ErroResponse> transicaoInvalida(TransicaoInvalidaException excecao) {
+        return responder(HttpStatus.CONFLICT, excecao.getMessage());
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    ResponseEntity<ErroResponse> parametroAusente(MissingServletRequestParameterException excecao) {
+        return responder(HttpStatus.BAD_REQUEST, "O parâmetro '%s' é obrigatório".formatted(excecao.getParameterName()));
     }
 
     @ExceptionHandler(DomainException.class)
