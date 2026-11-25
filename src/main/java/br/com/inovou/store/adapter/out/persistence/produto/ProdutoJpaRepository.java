@@ -3,6 +3,7 @@ package br.com.inovou.store.adapter.out.persistence.produto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -25,4 +26,12 @@ public interface ProdutoJpaRepository extends JpaRepository<ProdutoJpaEntity, Lo
     Optional<ProdutoJpaEntity> findBySlugAndAtivoTrue(String slug);
 
     List<ProdutoJpaEntity> findByAtivoTrueAndEstoqueGreaterThan(int estoque, Pageable pageable);
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query("update ProdutoJpaEntity p set p.estoque = p.estoque - :quantidade where p.id = :id and p.estoque >= :quantidade")
+    int baixarEstoque(@Param("id") Long id, @Param("quantidade") int quantidade);
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query("update ProdutoJpaEntity p set p.estoque = p.estoque + :quantidade where p.id = :id")
+    int reporEstoque(@Param("id") Long id, @Param("quantidade") int quantidade);
 }
