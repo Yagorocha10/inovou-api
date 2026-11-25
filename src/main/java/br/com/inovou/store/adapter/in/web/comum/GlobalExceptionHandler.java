@@ -1,12 +1,15 @@
 package br.com.inovou.store.adapter.in.web.comum;
 
+import br.com.inovou.store.domain.exception.CredenciaisInvalidasException;
 import br.com.inovou.store.domain.exception.DomainException;
+import br.com.inovou.store.domain.exception.EmailJaCadastradoException;
 import br.com.inovou.store.domain.exception.EstoqueInsuficienteException;
 import br.com.inovou.store.domain.exception.RecursoNaoEncontradoException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -27,6 +30,21 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NoResourceFoundException.class)
     ResponseEntity<ErroResponse> rotaInexistente(NoResourceFoundException excecao) {
         return responder(HttpStatus.NOT_FOUND, "Recurso não encontrado: /" + excecao.getResourcePath());
+    }
+
+    @ExceptionHandler(CredenciaisInvalidasException.class)
+    ResponseEntity<ErroResponse> credenciaisInvalidas(CredenciaisInvalidasException excecao) {
+        return responder(HttpStatus.UNAUTHORIZED, excecao.getMessage());
+    }
+
+    @ExceptionHandler(EmailJaCadastradoException.class)
+    ResponseEntity<ErroResponse> emailJaCadastrado(EmailJaCadastradoException excecao) {
+        return responder(HttpStatus.CONFLICT, excecao.getMessage());
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    ResponseEntity<ErroResponse> corpoInvalido(HttpMessageNotReadableException excecao) {
+        return responder(HttpStatus.BAD_REQUEST, "O corpo da requisição está ausente ou mal formatado");
     }
 
     @ExceptionHandler(EstoqueInsuficienteException.class)

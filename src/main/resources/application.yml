@@ -21,3 +21,11 @@ spring:
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+
+inovou:
+  jwt:
+    segredo: ${INOVOU_JWT_SEGREDO:segredo-de-desenvolvimento-da-inovou-store-troque-em-producao}
+    expiracao: PT8H
+  admin:
+    email: ${INOVOU_ADMIN_EMAIL:admin@inovoustore.local}
+    senha: ${INOVOU_ADMIN_SENHA:admin12345}
