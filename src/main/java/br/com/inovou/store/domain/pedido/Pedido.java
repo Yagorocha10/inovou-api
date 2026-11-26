@@ -7,6 +7,7 @@ import br.com.inovou.store.domain.frete.Frete;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 public class Pedido {
 
@@ -78,6 +79,10 @@ public class Pedido {
                     .formatted(codigoOuId(), status.getDescricao()));
         }
         status = StatusPedido.CANCELADO;
+    }
+
+    public Set<StatusPedido> proximosStatus() {
+        return status.proximosPermitidos();
     }
 
     public boolean podeSerCanceladoPeloCliente() {
