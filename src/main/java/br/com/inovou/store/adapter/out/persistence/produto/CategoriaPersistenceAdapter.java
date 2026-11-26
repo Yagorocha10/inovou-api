@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @Transactional(readOnly = true)
@@ -22,5 +23,10 @@ public class CategoriaPersistenceAdapter implements CategoriaRepositoryPort {
         return categoriaJpaRepository.findAllByOrderByNomeAsc().stream()
                 .map(ProdutoPersistenceMapper::paraDominio)
                 .toList();
+    }
+
+    @Override
+    public Optional<Categoria> buscarPorId(Long id) {
+        return categoriaJpaRepository.findById(id).map(ProdutoPersistenceMapper::paraDominio);
     }
 }

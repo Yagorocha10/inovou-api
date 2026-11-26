@@ -4,8 +4,10 @@ import br.com.inovou.store.domain.exception.CredenciaisInvalidasException;
 import br.com.inovou.store.domain.exception.DomainException;
 import br.com.inovou.store.domain.exception.EmailJaCadastradoException;
 import br.com.inovou.store.domain.exception.EstoqueInsuficienteException;
+import br.com.inovou.store.domain.exception.ProdutoDuplicadoException;
 import br.com.inovou.store.domain.exception.TransicaoInvalidaException;
 import br.com.inovou.store.domain.exception.RecursoNaoEncontradoException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -52,6 +54,23 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(EstoqueInsuficienteException.class)
     ResponseEntity<ErroResponse> estoqueInsuficiente(EstoqueInsuficienteException excecao) {
         return responder(HttpStatus.CONFLICT, excecao.getMessage());
+    }
+
+    @ExceptionHandler(ProdutoDuplicadoException.class)
+    ResponseEntity<ErroResponse> produtoDuplicado(ProdutoDuplicadoException excecao) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ErroResponse.de(HttpStatus.CONFLICT.value(),
+                excecao.getMessage(), Map.of("nome", excecao.getMessage())));
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    ResponseEntity<ErroResponse> violacaoDeIntegridade(DataIntegrityViolationException excecao) {
+        String detalhe = String.valueOf(excecao.getMostSpecificCause().getMessage());
+        if (detalhe.contains("uk_produto_nome")) {
+            String mensagem = "Já existe um produto com esse nome";
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(ErroResponse.de(HttpStatus.CONFLICT.value(),
+                    mensagem, Map.of("nome", mensagem)));
+        }
+        return responder(HttpStatus.CONFLICT, "A operação conflita com dados já existentes");
     }
 
     @ExceptionHandler(TransicaoInvalidaException.class)

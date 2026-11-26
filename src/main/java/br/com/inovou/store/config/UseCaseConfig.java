@@ -16,6 +16,7 @@ import br.com.inovou.store.application.service.CatalogoService;
 import br.com.inovou.store.application.service.CategoriaService;
 import br.com.inovou.store.application.service.EnderecoService;
 import br.com.inovou.store.application.service.PedidoService;
+import br.com.inovou.store.application.service.ProdutoAdminService;
 import br.com.inovou.store.application.service.UsuarioService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -69,5 +70,11 @@ public class UseCaseConfig {
                                 PagamentoPort pagamento, TransacaoPort transacao, Clock relogio) {
         return new PedidoService(pedidoRepository, carrinhoRepository, enderecoRepository, produtoRepository,
                 pagamento, transacao, relogio);
+    }
+
+    @Bean
+    ProdutoAdminService produtoAdminService(ProdutoRepositoryPort produtoRepository,
+                                            CategoriaRepositoryPort categoriaRepository) {
+        return new ProdutoAdminService(produtoRepository, categoriaRepository);
     }
 }
