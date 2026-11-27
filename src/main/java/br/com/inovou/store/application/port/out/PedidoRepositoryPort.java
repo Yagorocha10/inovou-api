@@ -26,4 +26,6 @@ public interface PedidoRepositoryPort {
     BigDecimal somarTotalNaoCanceladoEntre(LocalDateTime inicio, LocalDateTime fim);
 
     long contarPorStatus(Set<StatusPedido> status);
+
+    boolean clienteRecebeuProduto(Long usuarioId, Long produtoId);
 }

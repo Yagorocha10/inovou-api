@@ -1,6 +1,7 @@
 package br.com.inovou.store.application.consulta;
 
 import br.com.inovou.store.domain.frete.Frete;
+import br.com.inovou.store.domain.pedido.DescontoPix;
 import br.com.inovou.store.domain.pedido.EnderecoEntrega;
 import br.com.inovou.store.domain.pedido.ItemPedido;
 
@@ -19,5 +20,13 @@ public record ResumoCheckout(List<ItemPedido> itens, Frete frete, EnderecoEntreg
 
     public BigDecimal total() {
         return subtotal().add(frete.valor());
+    }
+
+    public BigDecimal descontoPix() {
+        return DescontoPix.sobre(subtotal());
+    }
+
+    public BigDecimal totalNoPix() {
+        return total().subtract(descontoPix());
     }
 }

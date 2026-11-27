@@ -1,6 +1,10 @@
 package br.com.inovou.store.application.consulta;
 
-public record FiltroProdutos(String busca, String categoria, OrdenacaoProduto ordenacao) {
+public record FiltroProdutos(String busca, String categoria, OrdenacaoProduto ordenacao, boolean apenasOfertas) {
+
+    public FiltroProdutos(String busca, String categoria, OrdenacaoProduto ordenacao) {
+        this(busca, categoria, ordenacao, false);
+    }
 
     public FiltroProdutos {
         busca = busca == null ? "" : busca.strip();

@@ -19,6 +19,8 @@ public interface ProdutoRepositoryPort {
 
     List<Produto> buscarDisponiveisMaisRecentes(int limite);
 
+    List<Produto> buscarMaisVendidos(int limite);
+
     boolean baixarEstoque(Long produtoId, int quantidade);
 
     void reporEstoque(Long produtoId, int quantidade);

@@ -51,6 +51,9 @@ public class ProdutoJpaEntity {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal preco;
 
+    @Column(name = "preco_anterior", precision = 10, scale = 2)
+    private BigDecimal precoAnterior;
+
     @Column(nullable = false)
     private int estoque;
 

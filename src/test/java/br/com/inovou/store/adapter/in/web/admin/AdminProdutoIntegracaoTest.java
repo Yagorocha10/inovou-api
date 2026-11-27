@@ -130,4 +130,34 @@ class AdminProdutoIntegracaoTest {
         mockMvc.perform(get("/api/admin/produtos/999999").header("Authorization", admin))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    void precoPromocionalApareceNaVitrineENoFiltroDeOfertas() throws Exception {
+        String criado = criar("""
+                {"nome":"%s","descricao":"Fone sem fio","preco":149.90,"precoAnterior":199.90,"estoque":3,"categoriaId":%d,"ativo":true}"""
+                .formatted(nome, categoriaId))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.precoAnterior").value(199.9))
+                .andReturn().getResponse().getContentAsString();
+        String slug = JsonPath.read(criado, "$.slug");
+
+        mockMvc.perform(get("/api/produtos/" + slug))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.precoAnterior").value(199.9))
+                .andExpect(jsonPath("$.percentualDesconto").value(25))
+                .andExpect(jsonPath("$.precoPix").value(142.4));
+        mockMvc.perform(get("/api/produtos").param("ofertas", "true").param("busca", nome))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalItens").value(1))
+                .andExpect(jsonPath("$.itens[0].slug").value(slug));
+    }
+
+    @Test
+    void precoAnteriorMenorQueOPrecoEhRecusado() throws Exception {
+        criar("""
+                {"nome":"%s","descricao":"","preco":50.00,"precoAnterior":40.00,"estoque":3,"categoriaId":%d,"ativo":true}"""
+                .formatted(nome, categoriaId))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.mensagem").value("O preço anterior deve ser maior que o preço atual para aparecer como promoção"));
+    }
 }

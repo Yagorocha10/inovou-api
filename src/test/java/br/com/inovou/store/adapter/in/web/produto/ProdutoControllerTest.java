@@ -5,7 +5,9 @@ import br.com.inovou.store.application.consulta.FiltroProdutos;
 import br.com.inovou.store.application.consulta.OrdenacaoProduto;
 import br.com.inovou.store.application.consulta.Pagina;
 import br.com.inovou.store.application.consulta.Paginacao;
+import br.com.inovou.store.application.consulta.ResumoAvaliacoes;
 import br.com.inovou.store.application.port.in.BuscarProdutosUseCase;
+import br.com.inovou.store.application.port.in.ConsultarAvaliacoesUseCase;
 import br.com.inovou.store.application.port.in.DetalharProdutoUseCase;
 import br.com.inovou.store.application.port.in.ListarDestaquesUseCase;
 import br.com.inovou.store.domain.exception.RecursoNaoEncontradoException;
@@ -22,6 +24,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -41,6 +44,9 @@ class ProdutoControllerTest {
     @Mock
     private ListarDestaquesUseCase listarDestaques;
 
+    @Mock
+    private ConsultarAvaliacoesUseCase consultarAvaliacoes;
+
     private MockMvc mockMvc;
 
     private final Produto controle = new Produto(1L, "Controle PS4 sem fio Bluetooth", null, "Vibração dupla",
@@ -49,7 +55,8 @@ class ProdutoControllerTest {
 
     @BeforeEach
     void setUp() {
-        ProdutoController controller = new ProdutoController(buscarProdutos, detalharProduto, listarDestaques);
+        ProdutoController controller = new ProdutoController(buscarProdutos, detalharProduto, listarDestaques,
+                consultarAvaliacoes);
         mockMvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
@@ -122,5 +129,37 @@ class ProdutoControllerTest {
         mockMvc.perform(get("/api/produtos/destaques").param("limite", "4"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].nome").value("Controle PS4 sem fio Bluetooth"));
+    }
+
+    @Test
+    void deveListarMaisVendidosComPromocaoPrecoNoPixEAvaliacoes() throws Exception {
+        Produto emPromocao = new Produto(1L, "Controle PS4 sem fio Bluetooth", null, "Vibração dupla",
+                new BigDecimal("149.90"), new BigDecimal("199.90"), 3, true, new Categoria(3L, "Games", null),
+                List.of());
+        when(listarDestaques.listarMaisVendidos(4)).thenReturn(List.of(emPromocao));
+        when(consultarAvaliacoes.resumosDosProdutos(List.of(1L)))
+                .thenReturn(Map.of(1L, new ResumoAvaliacoes(new BigDecimal("4.67"), 3)));
+
+        mockMvc.perform(get("/api/produtos/mais-vendidos").param("limite", "4"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].preco").value(149.9))
+                .andExpect(jsonPath("$[0].precoAnterior").value(199.9))
+                .andExpect(jsonPath("$[0].percentualDesconto").value(25))
+                .andExpect(jsonPath("$[0].precoPix").value(142.4))
+                .andExpect(jsonPath("$[0].notaMedia").value(4.7))
+                .andExpect(jsonPath("$[0].totalAvaliacoes").value(3));
+    }
+
+    @Test
+    void deveFiltrarSoAsOfertas() throws Exception {
+        FiltroProdutos filtro = new FiltroProdutos(null, null, OrdenacaoProduto.MAIS_RECENTES, true);
+        when(buscarProdutos.buscar(filtro, new Paginacao(0, 12)))
+                .thenReturn(new Pagina<>(List.of(controle), 0, 12, 1));
+
+        mockMvc.perform(get("/api/produtos").param("ofertas", "true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.itens[0].slug").value("controle-ps4-sem-fio-bluetooth"))
+                .andExpect(jsonPath("$.itens[0].precoAnterior").doesNotExist())
+                .andExpect(jsonPath("$.itens[0].totalAvaliacoes").value(0));
     }
 }

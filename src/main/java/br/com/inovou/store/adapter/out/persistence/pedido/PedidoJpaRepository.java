@@ -46,4 +46,18 @@ public interface PedidoJpaRepository extends JpaRepository<PedidoJpaEntity, Long
             """)
     BigDecimal somarFreteEntre(@Param("inicio") LocalDateTime inicio, @Param("fim") LocalDateTime fim,
                                @Param("ignorado") StatusPedido ignorado);
+
+    @Query("""
+            select sum(p.desconto) from PedidoJpaEntity p
+            where p.criadoEm >= :inicio and p.criadoEm < :fim and p.status <> :ignorado
+            """)
+    BigDecimal somarDescontoEntre(@Param("inicio") LocalDateTime inicio, @Param("fim") LocalDateTime fim,
+                                  @Param("ignorado") StatusPedido ignorado);
+
+    @Query("""
+            select count(i) from ItemPedidoJpaEntity i
+            where i.produtoId = :produtoId and i.pedido.usuarioId = :usuarioId and i.pedido.status = :entregue
+            """)
+    long contarItensRecebidos(@Param("usuarioId") Long usuarioId, @Param("produtoId") Long produtoId,
+                              @Param("entregue") StatusPedido entregue);
 }

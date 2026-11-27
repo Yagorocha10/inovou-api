@@ -6,7 +6,8 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public record ResumoCheckoutResponse(List<ItemPedidoResponse> itens, BigDecimal subtotal, BigDecimal frete,
-                                     BigDecimal total, int prazoEntregaDias, EnderecoEntregaResponse endereco) {
+                                     BigDecimal total, BigDecimal descontoPix, BigDecimal totalPix,
+                                     int prazoEntregaDias, EnderecoEntregaResponse endereco) {
 
     static ResumoCheckoutResponse de(ResumoCheckout resumo) {
         return new ResumoCheckoutResponse(
@@ -14,6 +15,8 @@ public record ResumoCheckoutResponse(List<ItemPedidoResponse> itens, BigDecimal 
                 resumo.subtotal(),
                 resumo.frete().valor(),
                 resumo.total(),
+                resumo.descontoPix(),
+                resumo.totalNoPix(),
                 resumo.frete().prazoDias(),
                 EnderecoEntregaResponse.de(resumo.endereco()));
     }

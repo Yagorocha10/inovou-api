@@ -100,6 +100,8 @@ class PedidoIntegracaoTest {
                 .andExpect(jsonPath("$.subtotal").value(80.0))
                 .andExpect(jsonPath("$.frete").value(10.0))
                 .andExpect(jsonPath("$.total").value(90.0))
+                .andExpect(jsonPath("$.descontoPix").value(4.0))
+                .andExpect(jsonPath("$.totalPix").value(86.0))
                 .andExpect(jsonPath("$.prazoEntregaDias").value(2))
                 .andExpect(jsonPath("$.endereco.cidade").value("Belém"));
 
@@ -107,7 +109,8 @@ class PedidoIntegracaoTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.codigo", startsWith("INV-")))
                 .andExpect(jsonPath("$.status").value("AGUARDANDO_PAGAMENTO"))
-                .andExpect(jsonPath("$.total").value(90.0))
+                .andExpect(jsonPath("$.desconto").value(4.0))
+                .andExpect(jsonPath("$.total").value(86.0))
                 .andExpect(jsonPath("$.itens[0].precoUnitario").value(40.0))
                 .andExpect(jsonPath("$.pagamento.forma").value("PIX"))
                 .andExpect(jsonPath("$.pagamento.codigoPix").isNotEmpty())

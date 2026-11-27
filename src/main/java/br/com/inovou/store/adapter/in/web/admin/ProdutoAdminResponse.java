@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public record ProdutoAdminResponse(Long id, String nome, String slug, String descricao, BigDecimal preco,
-                                   int estoque, boolean ativo, CategoriaResponse categoria,
+                                   BigDecimal precoAnterior, int estoque, boolean ativo, CategoriaResponse categoria,
                                    List<ImagemAdminResponse> imagens) {
 
     public record ImagemAdminResponse(Long id, String url, int ordem) {
@@ -20,7 +20,8 @@ public record ProdutoAdminResponse(Long id, String nome, String slug, String des
 
     static ProdutoAdminResponse de(Produto produto) {
         return new ProdutoAdminResponse(produto.getId(), produto.getNome(), produto.getSlug(),
-                produto.getDescricao(), produto.getPreco(), produto.getEstoque(), produto.isAtivo(),
+                produto.getDescricao(), produto.getPreco(), produto.getPrecoAnterior(), produto.getEstoque(),
+                produto.isAtivo(),
                 CategoriaResponse.de(produto.getCategoria()),
                 produto.getImagens().stream().map(ImagemAdminResponse::de).toList());
     }

@@ -87,4 +87,11 @@ class CatalogoServiceTest {
 
         verify(produtoRepository).buscarDisponiveisMaisRecentes(1);
     }
+
+    @Test
+    void deveLimitarQuantidadeDeMaisVendidos() {
+        catalogoService.listarMaisVendidos(500);
+
+        verify(produtoRepository).buscarMaisVendidos(CatalogoService.LIMITE_MAXIMO_DESTAQUES);
+    }
 }

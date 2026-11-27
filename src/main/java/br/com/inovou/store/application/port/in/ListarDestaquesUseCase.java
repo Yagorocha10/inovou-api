@@ -7,4 +7,6 @@ import java.util.List;
 public interface ListarDestaquesUseCase {
 
     List<Produto> listarDestaques(int limite);
+
+    List<Produto> listarMaisVendidos(int limite);
 }

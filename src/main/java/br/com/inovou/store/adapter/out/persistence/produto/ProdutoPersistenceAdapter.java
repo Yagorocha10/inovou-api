@@ -7,6 +7,7 @@ import br.com.inovou.store.application.consulta.Pagina;
 import br.com.inovou.store.application.consulta.Paginacao;
 import br.com.inovou.store.application.port.out.ProdutoRepositoryPort;
 import br.com.inovou.store.domain.exception.RecursoNaoEncontradoException;
+import br.com.inovou.store.domain.pedido.StatusPedido;
 import br.com.inovou.store.domain.produto.ImagemProduto;
 import br.com.inovou.store.domain.produto.Produto;
 import org.springframework.data.domain.Page;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -40,7 +42,8 @@ public class ProdutoPersistenceAdapter implements ProdutoRepositoryPort {
     @Override
     public Pagina<Produto> buscarAtivos(FiltroProdutos filtro, Paginacao paginacao) {
         PageRequest pageRequest = PageRequest.of(paginacao.pagina(), paginacao.tamanho(), ordenarPor(filtro.ordenacao()));
-        Page<ProdutoJpaEntity> pagina = produtoJpaRepository.buscarAtivos(filtro.busca(), filtro.categoria(), pageRequest);
+        Page<ProdutoJpaEntity> pagina = produtoJpaRepository.buscarAtivos(filtro.busca(), filtro.categoria(),
+                filtro.apenasOfertas(), pageRequest);
         List<Produto> produtos = pagina.getContent().stream().map(ProdutoPersistenceMapper::paraDominio).toList();
         return new Pagina<>(produtos, paginacao.pagina(), paginacao.tamanho(), pagina.getTotalElements());
     }
@@ -59,6 +62,21 @@ public class ProdutoPersistenceAdapter implements ProdutoRepositoryPort {
     public List<Produto> buscarDisponiveisMaisRecentes(int limite) {
         PageRequest pageRequest = PageRequest.of(0, limite, ordenarPor(OrdenacaoProduto.MAIS_RECENTES));
         return produtoJpaRepository.findByAtivoTrueAndEstoqueGreaterThan(0, pageRequest).stream()
+                .map(ProdutoPersistenceMapper::paraDominio)
+                .toList();
+    }
+
+    @Override
+    public List<Produto> buscarMaisVendidos(int limite) {
+        List<Long> ids = produtoJpaRepository.buscarIdsMaisVendidos(StatusPedido.CANCELADO, PageRequest.of(0, limite));
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+        Map<Long, ProdutoJpaEntity> porId = produtoJpaRepository.findAllById(ids).stream()
+                .collect(Collectors.toMap(ProdutoJpaEntity::getId, Function.identity()));
+        return ids.stream()
+                .map(porId::get)
+                .filter(Objects::nonNull)
                 .map(ProdutoPersistenceMapper::paraDominio)
                 .toList();
     }
@@ -106,6 +124,7 @@ public class ProdutoPersistenceAdapter implements ProdutoRepositoryPort {
         entidade.setNome(produto.getNome());
         entidade.setDescricao(produto.getDescricao());
         entidade.setPreco(produto.getPreco());
+        entidade.setPrecoAnterior(produto.getPrecoAnterior());
         entidade.setEstoque(produto.getEstoque());
         entidade.setAtivo(produto.isAtivo());
         entidade.setCategoria(categoriaJpaRepository.getReferenceById(produto.getCategoria().id()));

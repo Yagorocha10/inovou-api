@@ -18,11 +18,18 @@ public class Pedido {
     private final LocalDateTime criadoEm;
     private final List<ItemPedido> itens;
     private final BigDecimal frete;
+    private final BigDecimal desconto;
     private final EnderecoEntrega endereco;
     private Pagamento pagamento;
 
     public Pedido(Long id, String codigo, Long usuarioId, StatusPedido status, LocalDateTime criadoEm,
                   List<ItemPedido> itens, BigDecimal frete, EnderecoEntrega endereco, Pagamento pagamento) {
+        this(id, codigo, usuarioId, status, criadoEm, itens, frete, BigDecimal.ZERO, endereco, pagamento);
+    }
+
+    public Pedido(Long id, String codigo, Long usuarioId, StatusPedido status, LocalDateTime criadoEm,
+                  List<ItemPedido> itens, BigDecimal frete, BigDecimal desconto, EnderecoEntrega endereco,
+                  Pagamento pagamento) {
         if (usuarioId == null) {
             throw new DomainException("O pedido precisa pertencer a um usuário");
         }
@@ -42,6 +49,10 @@ public class Pedido {
         this.criadoEm = criadoEm;
         this.itens = List.copyOf(itens);
         this.frete = frete == null ? BigDecimal.ZERO : frete;
+        this.desconto = desconto == null ? BigDecimal.ZERO : desconto;
+        if (this.desconto.signum() < 0 || this.desconto.compareTo(subtotal()) > 0) {
+            throw new DomainException("O desconto do pedido deve ficar entre zero e o valor dos produtos");
+        }
         this.endereco = endereco;
         this.pagamento = pagamento;
     }
@@ -51,8 +62,16 @@ public class Pedido {
         if (forma == null) {
             throw new DomainException("Escolha uma forma de pagamento");
         }
+        BigDecimal desconto = forma == FormaPagamento.PIX ? DescontoPix.sobre(somar(itens)) : BigDecimal.ZERO;
         return new Pedido(null, null, usuarioId, StatusPedido.AGUARDANDO_PAGAMENTO, agora, itens,
-                frete.valor(), endereco, Pagamento.pendente(forma));
+                frete.valor(), desconto, endereco, Pagamento.pendente(forma));
+    }
+
+    private static BigDecimal somar(List<ItemPedido> itens) {
+        if (itens == null) {
+            return BigDecimal.ZERO;
+        }
+        return itens.stream().map(ItemPedido::subtotal).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     public void registrarPagamento(Pagamento resultado) {
@@ -94,11 +113,11 @@ public class Pedido {
     }
 
     public BigDecimal subtotal() {
-        return itens.stream().map(ItemPedido::subtotal).reduce(BigDecimal.ZERO, BigDecimal::add);
+        return somar(itens);
     }
 
     public BigDecimal total() {
-        return subtotal().add(frete);
+        return subtotal().add(frete).subtract(desconto);
     }
 
     public int quantidadeItens() {
@@ -135,6 +154,10 @@ public class Pedido {
 
     public BigDecimal getFrete() {
         return frete;
+    }
+
+    public BigDecimal getDesconto() {
+        return desconto;
     }
 
     public EnderecoEntrega getEndereco() {

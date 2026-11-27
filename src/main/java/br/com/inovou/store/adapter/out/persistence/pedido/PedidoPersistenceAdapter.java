@@ -81,12 +81,19 @@ public class PedidoPersistenceAdapter implements PedidoRepositoryPort {
     public BigDecimal somarTotalNaoCanceladoEntre(LocalDateTime inicio, LocalDateTime fim) {
         BigDecimal itens = pedidoJpaRepository.somarItensEntre(inicio, fim, StatusPedido.CANCELADO);
         BigDecimal frete = pedidoJpaRepository.somarFreteEntre(inicio, fim, StatusPedido.CANCELADO);
-        return zeroSeNulo(itens).add(zeroSeNulo(frete)).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal desconto = pedidoJpaRepository.somarDescontoEntre(inicio, fim, StatusPedido.CANCELADO);
+        return zeroSeNulo(itens).add(zeroSeNulo(frete)).subtract(zeroSeNulo(desconto))
+                .setScale(2, RoundingMode.HALF_UP);
     }
 
     @Override
     public long contarPorStatus(Set<StatusPedido> status) {
         return pedidoJpaRepository.countByStatusIn(status);
+    }
+
+    @Override
+    public boolean clienteRecebeuProduto(Long usuarioId, Long produtoId) {
+        return pedidoJpaRepository.contarItensRecebidos(usuarioId, produtoId, StatusPedido.ENTREGUE) > 0;
     }
 
     private static BigDecimal zeroSeNulo(BigDecimal valor) {
@@ -107,6 +114,7 @@ public class PedidoPersistenceAdapter implements PedidoRepositoryPort {
         entidade.setUsuarioId(pedido.getUsuarioId());
         entidade.setCriadoEm(pedido.getCriadoEm());
         entidade.setFrete(pedido.getFrete());
+        entidade.setDesconto(pedido.getDesconto());
         EnderecoEntrega endereco = pedido.getEndereco();
         entidade.setEntregaCep(endereco.cep());
         entidade.setEntregaLogradouro(endereco.logradouro());
@@ -143,6 +151,7 @@ public class PedidoPersistenceAdapter implements PedidoRepositoryPort {
                                 item.getImagem(), item.getPrecoUnitario(), item.getQuantidade()))
                         .toList(),
                 entidade.getFrete(),
+                entidade.getDesconto(),
                 new EnderecoEntrega(entidade.getEntregaCep(), entidade.getEntregaLogradouro(),
                         entidade.getEntregaNumero(), entidade.getEntregaComplemento(), entidade.getEntregaBairro(),
                         entidade.getEntregaCidade(), entidade.getEntregaUf()),

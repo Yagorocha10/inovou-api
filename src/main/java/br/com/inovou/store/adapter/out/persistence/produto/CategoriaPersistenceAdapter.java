@@ -20,7 +20,7 @@ public class CategoriaPersistenceAdapter implements CategoriaRepositoryPort {
 
     @Override
     public List<Categoria> listarTodas() {
-        return categoriaJpaRepository.findAllByOrderByNomeAsc().stream()
+        return categoriaJpaRepository.findAllByOrderByOrdemAscNomeAsc().stream()
                 .map(ProdutoPersistenceMapper::paraDominio)
                 .toList();
     }

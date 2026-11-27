@@ -9,7 +9,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public record PedidoResponse(Long id, String codigo, StatusPedido status, LocalDateTime criadoEm,
-                             List<ItemPedidoResponse> itens, BigDecimal subtotal, BigDecimal frete, BigDecimal total,
+                             List<ItemPedidoResponse> itens, BigDecimal subtotal, BigDecimal frete,
+                             BigDecimal desconto, BigDecimal total,
                              EnderecoEntregaResponse endereco, PagamentoResponse pagamento, boolean podeCancelar) {
 
     public record PagamentoResponse(FormaPagamento forma, String instrucoes, String codigoPix) {
@@ -24,6 +25,7 @@ public record PedidoResponse(Long id, String codigo, StatusPedido status, LocalD
                 pedido.getItens().stream().map(ItemPedidoResponse::de).toList(),
                 pedido.subtotal(),
                 pedido.getFrete(),
+                pedido.getDesconto(),
                 pedido.total(),
                 EnderecoEntregaResponse.de(pedido.getEndereco()),
                 new PagamentoResponse(pedido.getPagamento().forma(), pedido.getPagamento().instrucoes(),

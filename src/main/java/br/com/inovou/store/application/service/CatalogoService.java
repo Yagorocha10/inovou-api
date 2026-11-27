@@ -38,4 +38,10 @@ public class CatalogoService implements BuscarProdutosUseCase, DetalharProdutoUs
         int limiteValido = Math.clamp(limite, 1, LIMITE_MAXIMO_DESTAQUES);
         return produtoRepository.buscarDisponiveisMaisRecentes(limiteValido);
     }
+
+    @Override
+    public List<Produto> listarMaisVendidos(int limite) {
+        int limiteValido = Math.clamp(limite, 1, LIMITE_MAXIMO_DESTAQUES);
+        return produtoRepository.buscarMaisVendidos(limiteValido);
+    }
 }

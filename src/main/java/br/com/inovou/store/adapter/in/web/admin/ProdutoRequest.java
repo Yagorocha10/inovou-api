@@ -20,6 +20,9 @@ public record ProdutoRequest(
         @Positive(message = "O preço deve ser maior que zero")
         @Digits(integer = 8, fraction = 2, message = "O preço pode ter no máximo 2 casas decimais")
         BigDecimal preco,
+        @Positive(message = "O preço anterior deve ser maior que zero")
+        @Digits(integer = 8, fraction = 2, message = "O preço anterior pode ter no máximo 2 casas decimais")
+        BigDecimal precoAnterior,
         @NotNull(message = "Informe o estoque")
         @PositiveOrZero(message = "O estoque não pode ser negativo")
         Integer estoque,
@@ -28,6 +31,6 @@ public record ProdutoRequest(
         boolean ativo) {
 
     DadosProduto paraDados() {
-        return new DadosProduto(nome, descricao, preco, estoque, categoriaId, ativo);
+        return new DadosProduto(nome, descricao, preco, precoAnterior, estoque, categoriaId, ativo);
     }
 }

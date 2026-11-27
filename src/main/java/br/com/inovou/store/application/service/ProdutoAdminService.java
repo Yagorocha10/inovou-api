@@ -45,8 +45,8 @@ public class ProdutoAdminService implements GerenciarProdutosUseCase, GerenciarI
     @Override
     public Produto criar(DadosProduto dados) {
         Categoria categoria = categoria(dados.categoriaId());
-        Produto produto = new Produto(null, dados.nome(), null, dados.descricao(), dados.preco(), dados.estoque(),
-                dados.ativo(), categoria, List.of());
+        Produto produto = new Produto(null, dados.nome(), null, dados.descricao(), dados.preco(),
+                dados.precoAnterior(), dados.estoque(), dados.ativo(), categoria, List.of());
         garantirNomeUnico(produto.getNome(), null);
         return produtoRepository.salvar(produto);
     }
@@ -55,7 +55,8 @@ public class ProdutoAdminService implements GerenciarProdutosUseCase, GerenciarI
     public Produto atualizar(Long id, DadosProduto dados) {
         Produto produto = buscar(id);
         Categoria categoria = categoria(dados.categoriaId());
-        produto.atualizar(dados.nome(), dados.descricao(), dados.preco(), dados.estoque(), categoria, dados.ativo());
+        produto.atualizar(dados.nome(), dados.descricao(), dados.preco(), dados.precoAnterior(), dados.estoque(),
+                categoria, dados.ativo());
         garantirNomeUnico(produto.getNome(), id);
         return produtoRepository.salvar(produto);
     }

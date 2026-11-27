@@ -20,6 +20,7 @@ public final class ProdutoPersistenceMapper {
                 entidade.getSlug(),
                 entidade.getDescricao(),
                 entidade.getPreco(),
+                entidade.getPrecoAnterior(),
                 entidade.getEstoque(),
                 entidade.isAtivo(),
                 paraDominio(entidade.getCategoria()),

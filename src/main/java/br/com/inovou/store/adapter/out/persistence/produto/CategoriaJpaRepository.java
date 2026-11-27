@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface CategoriaJpaRepository extends JpaRepository<CategoriaJpaEntity, Long> {
 
-    List<CategoriaJpaEntity> findAllByOrderByNomeAsc();
+    List<CategoriaJpaEntity> findAllByOrderByOrdemAscNomeAsc();
 }

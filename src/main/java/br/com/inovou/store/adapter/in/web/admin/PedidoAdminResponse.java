@@ -13,7 +13,7 @@ import java.util.List;
 
 public record PedidoAdminResponse(Long id, String codigo, StatusPedido status, LocalDateTime criadoEm,
                                   List<ItemPedidoResponse> itens, BigDecimal subtotal, BigDecimal frete,
-                                  BigDecimal total, EnderecoEntregaResponse endereco,
+                                  BigDecimal desconto, BigDecimal total, EnderecoEntregaResponse endereco,
                                   PedidoResponse.PagamentoResponse pagamento, boolean podeCancelar,
                                   ClienteResponse cliente, List<StatusPedido> proximosStatus) {
 
@@ -21,7 +21,7 @@ public record PedidoAdminResponse(Long id, String codigo, StatusPedido status, L
         Pedido pedido = pedidoComCliente.pedido();
         PedidoResponse base = PedidoResponse.de(pedido);
         return new PedidoAdminResponse(base.id(), base.codigo(), base.status(), base.criadoEm(), base.itens(),
-                base.subtotal(), base.frete(), base.total(), base.endereco(), base.pagamento(),
+                base.subtotal(), base.frete(), base.desconto(), base.total(), base.endereco(), base.pagamento(),
                 base.podeCancelar(), ClienteResponse.de(pedidoComCliente.cliente()),
                 pedido.proximosStatus().stream().sorted().toList());
     }

@@ -2,6 +2,7 @@ package br.com.inovou.store.config;
 
 import br.com.inovou.store.application.port.in.GerenciarPedidosUseCase;
 import br.com.inovou.store.application.port.out.ArmazenamentoImagemPort;
+import br.com.inovou.store.application.port.out.AvaliacaoRepositoryPort;
 import br.com.inovou.store.application.port.out.CarrinhoRepositoryPort;
 import br.com.inovou.store.application.port.out.CategoriaRepositoryPort;
 import br.com.inovou.store.application.port.out.EnderecoRepositoryPort;
@@ -13,6 +14,7 @@ import br.com.inovou.store.application.port.out.TokenPort;
 import br.com.inovou.store.application.port.out.TransacaoPort;
 import br.com.inovou.store.application.port.out.UsuarioRepositoryPort;
 import br.com.inovou.store.application.service.AutenticacaoService;
+import br.com.inovou.store.application.service.AvaliacaoService;
 import br.com.inovou.store.application.service.CarrinhoService;
 import br.com.inovou.store.application.service.CatalogoService;
 import br.com.inovou.store.application.service.CategoriaService;
@@ -87,6 +89,14 @@ public class UseCaseConfig {
     PedidoAdminService pedidoAdminService(PedidoRepositoryPort pedidoRepository, UsuarioRepositoryPort usuarioRepository,
                                           ProdutoRepositoryPort produtoRepository, TransacaoPort transacao) {
         return new PedidoAdminService(pedidoRepository, usuarioRepository, produtoRepository, transacao);
+    }
+
+    @Bean
+    AvaliacaoService avaliacaoService(AvaliacaoRepositoryPort avaliacaoRepository,
+                                      ProdutoRepositoryPort produtoRepository, PedidoRepositoryPort pedidoRepository,
+                                      UsuarioRepositoryPort usuarioRepository, Clock relogio) {
+        return new AvaliacaoService(avaliacaoRepository, produtoRepository, pedidoRepository, usuarioRepository,
+                relogio);
     }
 
     @Bean

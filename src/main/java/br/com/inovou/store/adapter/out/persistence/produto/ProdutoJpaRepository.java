@@ -1,5 +1,6 @@
 package br.com.inovou.store.adapter.out.persistence.produto;
 
+import br.com.inovou.store.domain.pedido.StatusPedido;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,10 +19,21 @@ public interface ProdutoJpaRepository extends JpaRepository<ProdutoJpaEntity, Lo
             where p.ativo = true
               and (:busca = '' or lower(p.nome) like lower(concat('%', :busca, '%')))
               and (:categoria = '' or c.slug = :categoria)
+              and (:apenasOfertas = false or p.precoAnterior is not null)
             """)
     Page<ProdutoJpaEntity> buscarAtivos(@Param("busca") String busca,
                                         @Param("categoria") String categoria,
+                                        @Param("apenasOfertas") boolean apenasOfertas,
                                         Pageable pageable);
+
+    @Query("""
+            select i.produtoId from ItemPedidoJpaEntity i
+            where i.pedido.status <> :ignorado
+              and i.produtoId in (select p.id from ProdutoJpaEntity p where p.ativo = true and p.estoque > 0)
+            group by i.produtoId
+            order by sum(i.quantidade) desc, i.produtoId desc
+            """)
+    List<Long> buscarIdsMaisVendidos(@Param("ignorado") StatusPedido ignorado, Pageable pageable);
 
     Optional<ProdutoJpaEntity> findBySlugAndAtivoTrue(String slug);
 

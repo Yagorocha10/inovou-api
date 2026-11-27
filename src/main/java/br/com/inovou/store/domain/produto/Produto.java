@@ -26,6 +26,7 @@ public class Produto {
     private String slug;
     private String descricao;
     private BigDecimal preco;
+    private BigDecimal precoAnterior;
     private int estoque;
     private boolean ativo;
     private Categoria categoria;
@@ -33,11 +34,17 @@ public class Produto {
 
     public Produto(Long id, String nome, String slug, String descricao, BigDecimal preco,
                    int estoque, boolean ativo, Categoria categoria, List<ImagemProduto> imagens) {
+        this(id, nome, slug, descricao, preco, null, estoque, ativo, categoria, imagens);
+    }
+
+    public Produto(Long id, String nome, String slug, String descricao, BigDecimal preco, BigDecimal precoAnterior,
+                   int estoque, boolean ativo, Categoria categoria, List<ImagemProduto> imagens) {
         this.id = id;
         this.nome = validarNome(nome);
         this.slug = (slug == null || slug.isBlank()) ? Slug.de(this.nome) : slug;
         this.descricao = validarDescricao(descricao);
         this.preco = validarPreco(preco);
+        this.precoAnterior = validarPrecoAnterior(precoAnterior, this.preco);
         this.estoque = validarEstoque(estoque);
         this.ativo = ativo;
         this.categoria = validarCategoria(categoria);
@@ -72,7 +79,23 @@ public class Produto {
     }
 
     public void alterarPreco(BigDecimal novoPreco) {
-        preco = validarPreco(novoPreco);
+        BigDecimal precoValidado = validarPreco(novoPreco);
+        validarPrecoAnterior(precoAnterior, precoValidado);
+        preco = precoValidado;
+    }
+
+    public boolean emPromocao() {
+        return precoAnterior != null;
+    }
+
+    public int percentualDesconto() {
+        if (precoAnterior == null) {
+            return 0;
+        }
+        return precoAnterior.subtract(preco)
+                .multiply(BigDecimal.valueOf(100))
+                .divide(precoAnterior, 0, RoundingMode.DOWN)
+                .intValue();
     }
 
     public void alterarDados(String novoNome, String novaDescricao, Categoria novaCategoria) {
@@ -83,14 +106,21 @@ public class Produto {
 
     public void atualizar(String novoNome, String novaDescricao, BigDecimal novoPreco, int novoEstoque,
                           Categoria novaCategoria, boolean ativoAgora) {
+        atualizar(novoNome, novaDescricao, novoPreco, null, novoEstoque, novaCategoria, ativoAgora);
+    }
+
+    public void atualizar(String novoNome, String novaDescricao, BigDecimal novoPreco, BigDecimal novoPrecoAnterior,
+                          int novoEstoque, Categoria novaCategoria, boolean ativoAgora) {
         String nomeValidado = validarNome(novoNome);
         String descricaoValidada = validarDescricao(novaDescricao);
         BigDecimal precoValidado = validarPreco(novoPreco);
+        BigDecimal precoAnteriorValidado = validarPrecoAnterior(novoPrecoAnterior, precoValidado);
         int estoqueValidado = validarEstoque(novoEstoque);
         Categoria categoriaValidada = validarCategoria(novaCategoria);
         nome = nomeValidado;
         descricao = descricaoValidada;
         preco = precoValidado;
+        precoAnterior = precoAnteriorValidado;
         estoque = estoqueValidado;
         categoria = categoriaValidada;
         ativo = ativoAgora;
@@ -171,6 +201,10 @@ public class Produto {
         return preco;
     }
 
+    public BigDecimal getPrecoAnterior() {
+        return precoAnterior;
+    }
+
     public int getEstoque() {
         return estoque;
     }
@@ -216,6 +250,20 @@ public class Produto {
             throw new DomainException("O preço do produto pode ter no máximo 2 casas decimais");
         }
         return preco.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private static BigDecimal validarPrecoAnterior(BigDecimal precoAnterior, BigDecimal precoAtual) {
+        if (precoAnterior == null) {
+            return null;
+        }
+        if (precoAnterior.stripTrailingZeros().scale() > 2) {
+            throw new DomainException("O preço anterior pode ter no máximo 2 casas decimais");
+        }
+        BigDecimal normalizado = precoAnterior.setScale(2, RoundingMode.HALF_UP);
+        if (normalizado.compareTo(precoAtual) <= 0) {
+            throw new DomainException("O preço anterior deve ser maior que o preço atual para aparecer como promoção");
+        }
+        return normalizado;
     }
 
     private static int validarEstoque(int estoque) {

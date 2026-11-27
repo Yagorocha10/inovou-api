@@ -31,9 +31,33 @@ class PedidoTest {
 
         assertThat(pedido.getStatus()).isEqualTo(StatusPedido.AGUARDANDO_PAGAMENTO);
         assertThat(pedido.subtotal()).isEqualByComparingTo("289.80");
-        assertThat(pedido.total()).isEqualByComparingTo("299.80");
+        assertThat(pedido.getDesconto()).isEqualByComparingTo("14.49");
+        assertThat(pedido.total()).isEqualByComparingTo("285.31");
         assertThat(pedido.quantidadeItens()).isEqualTo(3);
         assertThat(pedido.podeSerCanceladoPeloCliente()).isTrue();
+    }
+
+    @Test
+    void soOPixTemCincoPorCentoDeDescontoNosProdutosENaoNoFrete() {
+        Pedido cartao = novo(FormaPagamento.CARTAO);
+        Pedido naEntrega = novo(FormaPagamento.NA_ENTREGA);
+
+        assertThat(cartao.getDesconto()).isEqualByComparingTo("0");
+        assertThat(cartao.total()).isEqualByComparingTo("299.80");
+        assertThat(naEntrega.getDesconto()).isEqualByComparingTo("0");
+        assertThat(naEntrega.total()).isEqualByComparingTo("299.80");
+    }
+
+    @Test
+    void descontoNaoPodeSerNegativoNemMaiorQueOsProdutos() {
+        assertThatThrownBy(() -> new Pedido(1L, "INV-000001", 7L, StatusPedido.AGUARDANDO_PAGAMENTO,
+                LocalDateTime.of(2026, 11, 25, 10, 0), itens, new BigDecimal("10.00"), new BigDecimal("300.00"),
+                endereco, Pagamento.pendente(FormaPagamento.PIX)))
+                .isInstanceOf(DomainException.class);
+        assertThatThrownBy(() -> new Pedido(1L, "INV-000001", 7L, StatusPedido.AGUARDANDO_PAGAMENTO,
+                LocalDateTime.of(2026, 11, 25, 10, 0), itens, new BigDecimal("10.00"), new BigDecimal("-1.00"),
+                endereco, Pagamento.pendente(FormaPagamento.PIX)))
+                .isInstanceOf(DomainException.class);
     }
 
     @Test

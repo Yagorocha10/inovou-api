@@ -62,6 +62,9 @@ public class PedidoJpaEntity {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal frete;
 
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal desconto = BigDecimal.ZERO;
+
     @Column(name = "entrega_cep", nullable = false, length = 9)
     private String entregaCep;
 
