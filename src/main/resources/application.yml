@@ -17,6 +17,10 @@ spring:
         default_batch_fetch_size: 20
   flyway:
     enabled: true
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
 
 springdoc:
   swagger-ui:
@@ -29,3 +33,5 @@ inovou:
   admin:
     email: ${INOVOU_ADMIN_EMAIL:admin@inovoustore.local}
     senha: ${INOVOU_ADMIN_SENHA:admin12345}
+  uploads:
+    diretorio: ${INOVOU_UPLOADS_DIR:./uploads}

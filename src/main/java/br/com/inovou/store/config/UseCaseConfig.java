@@ -1,5 +1,6 @@
 package br.com.inovou.store.config;
 
+import br.com.inovou.store.application.port.out.ArmazenamentoImagemPort;
 import br.com.inovou.store.application.port.out.CarrinhoRepositoryPort;
 import br.com.inovou.store.application.port.out.CategoriaRepositoryPort;
 import br.com.inovou.store.application.port.out.EnderecoRepositoryPort;
@@ -74,7 +75,8 @@ public class UseCaseConfig {
 
     @Bean
     ProdutoAdminService produtoAdminService(ProdutoRepositoryPort produtoRepository,
-                                            CategoriaRepositoryPort categoriaRepository) {
-        return new ProdutoAdminService(produtoRepository, categoriaRepository);
+                                            CategoriaRepositoryPort categoriaRepository,
+                                            ArmazenamentoImagemPort armazenamento) {
+        return new ProdutoAdminService(produtoRepository, categoriaRepository, armazenamento);
     }
 }

@@ -18,6 +18,9 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.LinkedHashMap;
@@ -60,6 +63,16 @@ public class GlobalExceptionHandler {
     ResponseEntity<ErroResponse> produtoDuplicado(ProdutoDuplicadoException excecao) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ErroResponse.de(HttpStatus.CONFLICT.value(),
                 excecao.getMessage(), Map.of("nome", excecao.getMessage())));
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    ResponseEntity<ErroResponse> arquivoGrandeDemais(MaxUploadSizeExceededException excecao) {
+        return responder(HttpStatus.CONTENT_TOO_LARGE, "A foto deve ter no máximo 5 MB");
+    }
+
+    @ExceptionHandler({MissingServletRequestPartException.class, MultipartException.class})
+    ResponseEntity<ErroResponse> arquivoAusente(Exception excecao) {
+        return responder(HttpStatus.BAD_REQUEST, "Envie a foto no campo 'arquivo' de um formulário multipart");
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
