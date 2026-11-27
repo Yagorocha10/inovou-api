@@ -15,7 +15,7 @@ public record PedidoResponse(Long id, String codigo, StatusPedido status, LocalD
     public record PagamentoResponse(FormaPagamento forma, String instrucoes, String codigoPix) {
     }
 
-    static PedidoResponse de(Pedido pedido) {
+    public static PedidoResponse de(Pedido pedido) {
         return new PedidoResponse(
                 pedido.getId(),
                 pedido.getCodigo(),

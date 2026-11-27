@@ -1,5 +1,6 @@
 package br.com.inovou.store.adapter.out.persistence.pedido;
 
+import br.com.inovou.store.application.consulta.FiltroPedidosAdmin;
 import br.com.inovou.store.application.consulta.Pagina;
 import br.com.inovou.store.application.consulta.Paginacao;
 import br.com.inovou.store.application.port.out.PedidoRepositoryPort;
@@ -8,13 +9,16 @@ import br.com.inovou.store.domain.pedido.EnderecoEntrega;
 import br.com.inovou.store.domain.pedido.ItemPedido;
 import br.com.inovou.store.domain.pedido.Pagamento;
 import br.com.inovou.store.domain.pedido.Pedido;
+import br.com.inovou.store.domain.pedido.StatusPedido;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.EnumSet;
 import java.util.Optional;
+import java.util.Set;
 
 @Component
 @Transactional(readOnly = true)
@@ -49,6 +53,17 @@ public class PedidoPersistenceAdapter implements PedidoRepositoryPort {
     @Override
     public Pagina<Pedido> listarDoUsuario(Long usuarioId, Paginacao paginacao) {
         Page<PedidoJpaEntity> pagina = pedidoJpaRepository.findByUsuarioId(usuarioId,
+                PageRequest.of(paginacao.pagina(), paginacao.tamanho(), MAIS_RECENTES_PRIMEIRO));
+        return new Pagina<>(pagina.getContent().stream().map(PedidoPersistenceAdapter::paraDominio).toList(),
+                paginacao.pagina(), paginacao.tamanho(), pagina.getTotalElements());
+    }
+
+    @Override
+    public Pagina<Pedido> listarParaAdmin(FiltroPedidosAdmin filtro, Paginacao paginacao) {
+        Set<StatusPedido> status = filtro.status() == null
+                ? EnumSet.allOf(StatusPedido.class)
+                : EnumSet.of(filtro.status());
+        Page<PedidoJpaEntity> pagina = pedidoJpaRepository.buscarParaAdmin(status, filtro.busca(),
                 PageRequest.of(paginacao.pagina(), paginacao.tamanho(), MAIS_RECENTES_PRIMEIRO));
         return new Pagina<>(pagina.getContent().stream().map(PedidoPersistenceAdapter::paraDominio).toList(),
                 paginacao.pagina(), paginacao.tamanho(), pagina.getTotalElements());

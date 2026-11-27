@@ -5,7 +5,9 @@ import br.com.inovou.store.domain.usuario.Usuario;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Component
 @Transactional(readOnly = true)
@@ -43,6 +45,11 @@ public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
         entidade.setSenhaHash(usuario.getSenhaHash());
         entidade.setRole(usuario.getRole());
         return paraDominio(usuarioJpaRepository.save(entidade));
+    }
+
+    @Override
+    public List<Usuario> buscarPorIds(Set<Long> ids) {
+        return usuarioJpaRepository.findAllById(ids).stream().map(UsuarioPersistenceAdapter::paraDominio).toList();
     }
 
     private static Usuario paraDominio(UsuarioJpaEntity entidade) {

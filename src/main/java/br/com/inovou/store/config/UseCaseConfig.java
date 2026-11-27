@@ -16,6 +16,7 @@ import br.com.inovou.store.application.service.CarrinhoService;
 import br.com.inovou.store.application.service.CatalogoService;
 import br.com.inovou.store.application.service.CategoriaService;
 import br.com.inovou.store.application.service.EnderecoService;
+import br.com.inovou.store.application.service.PedidoAdminService;
 import br.com.inovou.store.application.service.PedidoService;
 import br.com.inovou.store.application.service.ProdutoAdminService;
 import br.com.inovou.store.application.service.UsuarioService;
@@ -78,5 +79,11 @@ public class UseCaseConfig {
                                             CategoriaRepositoryPort categoriaRepository,
                                             ArmazenamentoImagemPort armazenamento) {
         return new ProdutoAdminService(produtoRepository, categoriaRepository, armazenamento);
+    }
+
+    @Bean
+    PedidoAdminService pedidoAdminService(PedidoRepositoryPort pedidoRepository, UsuarioRepositoryPort usuarioRepository,
+                                          ProdutoRepositoryPort produtoRepository, TransacaoPort transacao) {
+        return new PedidoAdminService(pedidoRepository, usuarioRepository, produtoRepository, transacao);
     }
 }
