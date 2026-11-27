@@ -115,6 +115,11 @@ public class ProdutoPersistenceAdapter implements ProdutoRepositoryPort {
         return ProdutoPersistenceMapper.paraDominio(salva);
     }
 
+    @Override
+    public long contarAtivosSemEstoque() {
+        return produtoJpaRepository.countByAtivoTrueAndEstoque(0);
+    }
+
     private static void sincronizarImagens(ProdutoJpaEntity entidade, List<ImagemProduto> desejadas) {
         Map<Long, ImagemProduto> porId = desejadas.stream()
                 .filter(imagem -> imagem.id() != null)

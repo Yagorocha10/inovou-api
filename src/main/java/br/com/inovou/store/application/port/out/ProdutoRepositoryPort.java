@@ -28,4 +28,6 @@ public interface ProdutoRepositoryPort {
     boolean existeComNome(String nome, Long ignorarId);
 
     Produto salvar(Produto produto);
+
+    long contarAtivosSemEstoque();
 }

@@ -16,6 +16,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.EnumSet;
 import java.util.Optional;
 import java.util.Set;
@@ -67,6 +70,27 @@ public class PedidoPersistenceAdapter implements PedidoRepositoryPort {
                 PageRequest.of(paginacao.pagina(), paginacao.tamanho(), MAIS_RECENTES_PRIMEIRO));
         return new Pagina<>(pagina.getContent().stream().map(PedidoPersistenceAdapter::paraDominio).toList(),
                 paginacao.pagina(), paginacao.tamanho(), pagina.getTotalElements());
+    }
+
+    @Override
+    public long contarCriadosEntre(LocalDateTime inicio, LocalDateTime fim) {
+        return pedidoJpaRepository.countByCriadoEmGreaterThanEqualAndCriadoEmLessThan(inicio, fim);
+    }
+
+    @Override
+    public BigDecimal somarTotalNaoCanceladoEntre(LocalDateTime inicio, LocalDateTime fim) {
+        BigDecimal itens = pedidoJpaRepository.somarItensEntre(inicio, fim, StatusPedido.CANCELADO);
+        BigDecimal frete = pedidoJpaRepository.somarFreteEntre(inicio, fim, StatusPedido.CANCELADO);
+        return zeroSeNulo(itens).add(zeroSeNulo(frete)).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    @Override
+    public long contarPorStatus(Set<StatusPedido> status) {
+        return pedidoJpaRepository.countByStatusIn(status);
+    }
+
+    private static BigDecimal zeroSeNulo(BigDecimal valor) {
+        return valor == null ? BigDecimal.ZERO : valor;
     }
 
     static String gerarCodigo(Long id) {

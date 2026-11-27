@@ -54,4 +54,6 @@ public interface ProdutoJpaRepository extends JpaRepository<ProdutoJpaEntity, Lo
     boolean existsByNomeIgnoreCaseAndIdNot(String nome, Long id);
 
     boolean existsBySlug(String slug);
+
+    long countByAtivoTrueAndEstoque(int estoque);
 }
