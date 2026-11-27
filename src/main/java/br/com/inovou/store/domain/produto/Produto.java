@@ -2,17 +2,24 @@ package br.com.inovou.store.domain.produto;
 
 import br.com.inovou.store.domain.exception.DomainException;
 import br.com.inovou.store.domain.exception.EstoqueInsuficienteException;
+import br.com.inovou.store.domain.exception.RecursoNaoEncontradoException;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class Produto {
 
-    private static final int TAMANHO_MAXIMO_NOME = 150;
+    public static final int TAMANHO_MAXIMO_NOME = 150;
+    public static final int TAMANHO_MAXIMO_DESCRICAO = 2000;
+    public static final int LIMITE_IMAGENS = 8;
 
     private final Long id;
     private String nome;
@@ -29,7 +36,7 @@ public class Produto {
         this.id = id;
         this.nome = validarNome(nome);
         this.slug = (slug == null || slug.isBlank()) ? Slug.de(this.nome) : slug;
-        this.descricao = descricao == null ? "" : descricao.strip();
+        this.descricao = validarDescricao(descricao);
         this.preco = validarPreco(preco);
         this.estoque = validarEstoque(estoque);
         this.ativo = ativo;
@@ -70,8 +77,27 @@ public class Produto {
 
     public void alterarDados(String novoNome, String novaDescricao, Categoria novaCategoria) {
         nome = validarNome(novoNome);
-        descricao = novaDescricao == null ? "" : novaDescricao.strip();
+        descricao = validarDescricao(novaDescricao);
         categoria = validarCategoria(novaCategoria);
+    }
+
+    public void atualizar(String novoNome, String novaDescricao, BigDecimal novoPreco, int novoEstoque,
+                          Categoria novaCategoria, boolean ativoAgora) {
+        String nomeValidado = validarNome(novoNome);
+        String descricaoValidada = validarDescricao(novaDescricao);
+        BigDecimal precoValidado = validarPreco(novoPreco);
+        int estoqueValidado = validarEstoque(novoEstoque);
+        Categoria categoriaValidada = validarCategoria(novaCategoria);
+        nome = nomeValidado;
+        descricao = descricaoValidada;
+        preco = precoValidado;
+        estoque = estoqueValidado;
+        categoria = categoriaValidada;
+        ativo = ativoAgora;
+    }
+
+    public void definirEstoque(int novoEstoque) {
+        estoque = validarEstoque(novoEstoque);
     }
 
     public void ativar() {
@@ -83,7 +109,42 @@ public class Produto {
     }
 
     public void adicionarImagem(String url) {
+        if (imagens.size() >= LIMITE_IMAGENS) {
+            throw new DomainException("Cada produto pode ter no máximo %d fotos".formatted(LIMITE_IMAGENS));
+        }
         imagens.add(new ImagemProduto(null, url, imagens.size()));
+    }
+
+    public ImagemProduto removerImagem(Long imagemId) {
+        ImagemProduto removida = imagens.stream()
+                .filter(imagem -> imagem.id() != null && imagem.id().equals(imagemId))
+                .findFirst()
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Foto não encontrada neste produto"));
+        imagens.remove(removida);
+        renumerar(new ArrayList<>(imagens));
+        return removida;
+    }
+
+    public void reordenarImagens(List<Long> idsNaNovaOrdem) {
+        List<Long> atuais = imagens.stream().map(ImagemProduto::id).toList();
+        boolean mesmaLista = idsNaNovaOrdem != null
+                && idsNaNovaOrdem.size() == atuais.size()
+                && new HashSet<>(idsNaNovaOrdem).size() == idsNaNovaOrdem.size()
+                && new HashSet<>(idsNaNovaOrdem).equals(new HashSet<>(atuais));
+        if (!mesmaLista) {
+            throw new DomainException("Envie todas as fotos do produto, cada uma uma única vez, na nova ordem");
+        }
+        Map<Long, ImagemProduto> porId = imagens.stream()
+                .collect(Collectors.toMap(ImagemProduto::id, Function.identity()));
+        renumerar(idsNaNovaOrdem.stream().map(porId::get).toList());
+    }
+
+    private void renumerar(List<ImagemProduto> emOrdem) {
+        imagens.clear();
+        for (int posicao = 0; posicao < emOrdem.size(); posicao++) {
+            ImagemProduto imagem = emOrdem.get(posicao);
+            imagens.add(new ImagemProduto(imagem.id(), imagem.url(), posicao));
+        }
     }
 
     public Optional<ImagemProduto> imagemPrincipal() {
@@ -138,9 +199,21 @@ public class Produto {
         return nomeLimpo;
     }
 
+    private static String validarDescricao(String descricao) {
+        String descricaoLimpa = descricao == null ? "" : descricao.strip();
+        if (descricaoLimpa.length() > TAMANHO_MAXIMO_DESCRICAO) {
+            throw new DomainException("A descrição do produto pode ter no máximo %d caracteres"
+                    .formatted(TAMANHO_MAXIMO_DESCRICAO));
+        }
+        return descricaoLimpa;
+    }
+
     private static BigDecimal validarPreco(BigDecimal preco) {
         if (preco == null || preco.signum() <= 0) {
             throw new DomainException("O preço do produto deve ser maior que zero");
+        }
+        if (preco.stripTrailingZeros().scale() > 2) {
+            throw new DomainException("O preço do produto pode ter no máximo 2 casas decimais");
         }
         return preco.setScale(2, RoundingMode.HALF_UP);
     }

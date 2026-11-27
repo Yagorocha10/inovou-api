@@ -1,5 +1,7 @@
 package br.com.inovou.store.config;
 
+import br.com.inovou.store.application.port.in.GerenciarPedidosUseCase;
+import br.com.inovou.store.application.port.out.ArmazenamentoImagemPort;
 import br.com.inovou.store.application.port.out.CarrinhoRepositoryPort;
 import br.com.inovou.store.application.port.out.CategoriaRepositoryPort;
 import br.com.inovou.store.application.port.out.EnderecoRepositoryPort;
@@ -15,7 +17,10 @@ import br.com.inovou.store.application.service.CarrinhoService;
 import br.com.inovou.store.application.service.CatalogoService;
 import br.com.inovou.store.application.service.CategoriaService;
 import br.com.inovou.store.application.service.EnderecoService;
+import br.com.inovou.store.application.service.PainelAdminService;
+import br.com.inovou.store.application.service.PedidoAdminService;
 import br.com.inovou.store.application.service.PedidoService;
+import br.com.inovou.store.application.service.ProdutoAdminService;
 import br.com.inovou.store.application.service.UsuarioService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -69,5 +74,24 @@ public class UseCaseConfig {
                                 PagamentoPort pagamento, TransacaoPort transacao, Clock relogio) {
         return new PedidoService(pedidoRepository, carrinhoRepository, enderecoRepository, produtoRepository,
                 pagamento, transacao, relogio);
+    }
+
+    @Bean
+    ProdutoAdminService produtoAdminService(ProdutoRepositoryPort produtoRepository,
+                                            CategoriaRepositoryPort categoriaRepository,
+                                            ArmazenamentoImagemPort armazenamento) {
+        return new ProdutoAdminService(produtoRepository, categoriaRepository, armazenamento);
+    }
+
+    @Bean
+    PedidoAdminService pedidoAdminService(PedidoRepositoryPort pedidoRepository, UsuarioRepositoryPort usuarioRepository,
+                                          ProdutoRepositoryPort produtoRepository, TransacaoPort transacao) {
+        return new PedidoAdminService(pedidoRepository, usuarioRepository, produtoRepository, transacao);
+    }
+
+    @Bean
+    PainelAdminService painelAdminService(PedidoRepositoryPort pedidoRepository, ProdutoRepositoryPort produtoRepository,
+                                          GerenciarPedidosUseCase pedidos, Clock relogio) {
+        return new PainelAdminService(pedidoRepository, produtoRepository, pedidos, relogio);
     }
 }

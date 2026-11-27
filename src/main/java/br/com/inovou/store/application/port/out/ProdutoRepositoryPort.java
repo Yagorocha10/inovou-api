@@ -1,6 +1,7 @@
 package br.com.inovou.store.application.port.out;
 
 import br.com.inovou.store.application.consulta.FiltroProdutos;
+import br.com.inovou.store.application.consulta.FiltroProdutosAdmin;
 import br.com.inovou.store.application.consulta.Pagina;
 import br.com.inovou.store.application.consulta.Paginacao;
 import br.com.inovou.store.domain.produto.Produto;
@@ -21,4 +22,12 @@ public interface ProdutoRepositoryPort {
     boolean baixarEstoque(Long produtoId, int quantidade);
 
     void reporEstoque(Long produtoId, int quantidade);
+
+    Pagina<Produto> buscarParaAdmin(FiltroProdutosAdmin filtro, Paginacao paginacao);
+
+    boolean existeComNome(String nome, Long ignorarId);
+
+    Produto salvar(Produto produto);
+
+    long contarAtivosSemEstoque();
 }

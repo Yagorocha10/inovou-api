@@ -4,8 +4,10 @@ import br.com.inovou.store.domain.exception.CredenciaisInvalidasException;
 import br.com.inovou.store.domain.exception.DomainException;
 import br.com.inovou.store.domain.exception.EmailJaCadastradoException;
 import br.com.inovou.store.domain.exception.EstoqueInsuficienteException;
+import br.com.inovou.store.domain.exception.ProdutoDuplicadoException;
 import br.com.inovou.store.domain.exception.TransicaoInvalidaException;
 import br.com.inovou.store.domain.exception.RecursoNaoEncontradoException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -16,6 +18,9 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.LinkedHashMap;
@@ -52,6 +57,33 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(EstoqueInsuficienteException.class)
     ResponseEntity<ErroResponse> estoqueInsuficiente(EstoqueInsuficienteException excecao) {
         return responder(HttpStatus.CONFLICT, excecao.getMessage());
+    }
+
+    @ExceptionHandler(ProdutoDuplicadoException.class)
+    ResponseEntity<ErroResponse> produtoDuplicado(ProdutoDuplicadoException excecao) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ErroResponse.de(HttpStatus.CONFLICT.value(),
+                excecao.getMessage(), Map.of("nome", excecao.getMessage())));
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    ResponseEntity<ErroResponse> arquivoGrandeDemais(MaxUploadSizeExceededException excecao) {
+        return responder(HttpStatus.CONTENT_TOO_LARGE, "A foto deve ter no máximo 5 MB");
+    }
+
+    @ExceptionHandler({MissingServletRequestPartException.class, MultipartException.class})
+    ResponseEntity<ErroResponse> arquivoAusente(Exception excecao) {
+        return responder(HttpStatus.BAD_REQUEST, "Envie a foto no campo 'arquivo' de um formulário multipart");
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    ResponseEntity<ErroResponse> violacaoDeIntegridade(DataIntegrityViolationException excecao) {
+        String detalhe = String.valueOf(excecao.getMostSpecificCause().getMessage());
+        if (detalhe.contains("uk_produto_nome")) {
+            String mensagem = "Já existe um produto com esse nome";
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(ErroResponse.de(HttpStatus.CONFLICT.value(),
+                    mensagem, Map.of("nome", mensagem)));
+        }
+        return responder(HttpStatus.CONFLICT, "A operação conflita com dados já existentes");
     }
 
     @ExceptionHandler(TransicaoInvalidaException.class)

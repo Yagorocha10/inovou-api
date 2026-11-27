@@ -1,5 +1,6 @@
 package br.com.inovou.store.adapter.out.persistence.pedido;
 
+import br.com.inovou.store.application.consulta.FiltroPedidosAdmin;
 import br.com.inovou.store.application.consulta.Pagina;
 import br.com.inovou.store.application.consulta.Paginacao;
 import br.com.inovou.store.application.port.out.PedidoRepositoryPort;
@@ -8,13 +9,19 @@ import br.com.inovou.store.domain.pedido.EnderecoEntrega;
 import br.com.inovou.store.domain.pedido.ItemPedido;
 import br.com.inovou.store.domain.pedido.Pagamento;
 import br.com.inovou.store.domain.pedido.Pedido;
+import br.com.inovou.store.domain.pedido.StatusPedido;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.util.EnumSet;
 import java.util.Optional;
+import java.util.Set;
 
 @Component
 @Transactional(readOnly = true)
@@ -52,6 +59,38 @@ public class PedidoPersistenceAdapter implements PedidoRepositoryPort {
                 PageRequest.of(paginacao.pagina(), paginacao.tamanho(), MAIS_RECENTES_PRIMEIRO));
         return new Pagina<>(pagina.getContent().stream().map(PedidoPersistenceAdapter::paraDominio).toList(),
                 paginacao.pagina(), paginacao.tamanho(), pagina.getTotalElements());
+    }
+
+    @Override
+    public Pagina<Pedido> listarParaAdmin(FiltroPedidosAdmin filtro, Paginacao paginacao) {
+        Set<StatusPedido> status = filtro.status() == null
+                ? EnumSet.allOf(StatusPedido.class)
+                : EnumSet.of(filtro.status());
+        Page<PedidoJpaEntity> pagina = pedidoJpaRepository.buscarParaAdmin(status, filtro.busca(),
+                PageRequest.of(paginacao.pagina(), paginacao.tamanho(), MAIS_RECENTES_PRIMEIRO));
+        return new Pagina<>(pagina.getContent().stream().map(PedidoPersistenceAdapter::paraDominio).toList(),
+                paginacao.pagina(), paginacao.tamanho(), pagina.getTotalElements());
+    }
+
+    @Override
+    public long contarCriadosEntre(LocalDateTime inicio, LocalDateTime fim) {
+        return pedidoJpaRepository.countByCriadoEmGreaterThanEqualAndCriadoEmLessThan(inicio, fim);
+    }
+
+    @Override
+    public BigDecimal somarTotalNaoCanceladoEntre(LocalDateTime inicio, LocalDateTime fim) {
+        BigDecimal itens = pedidoJpaRepository.somarItensEntre(inicio, fim, StatusPedido.CANCELADO);
+        BigDecimal frete = pedidoJpaRepository.somarFreteEntre(inicio, fim, StatusPedido.CANCELADO);
+        return zeroSeNulo(itens).add(zeroSeNulo(frete)).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    @Override
+    public long contarPorStatus(Set<StatusPedido> status) {
+        return pedidoJpaRepository.countByStatusIn(status);
+    }
+
+    private static BigDecimal zeroSeNulo(BigDecimal valor) {
+        return valor == null ? BigDecimal.ZERO : valor;
     }
 
     static String gerarCodigo(Long id) {

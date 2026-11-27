@@ -36,7 +36,7 @@ public class SecurityConfig {
                         .authenticationEntryPoint(respostaErro)
                         .accessDeniedHandler(respostaErro))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/api/produtos/**", "/api/categorias/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/produtos/**", "/api/categorias/**", "/uploads/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/cadastro", "/api/auth/login").permitAll()
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/error").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")

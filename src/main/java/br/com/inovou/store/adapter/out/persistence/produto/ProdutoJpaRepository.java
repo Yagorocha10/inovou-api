@@ -34,4 +34,26 @@ public interface ProdutoJpaRepository extends JpaRepository<ProdutoJpaEntity, Lo
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("update ProdutoJpaEntity p set p.estoque = p.estoque + :quantidade where p.id = :id")
     int reporEstoque(@Param("id") Long id, @Param("quantidade") int quantidade);
+
+    @Query("""
+            select p from ProdutoJpaEntity p
+            join p.categoria c
+            where (:busca = '' or lower(p.nome) like lower(concat('%', :busca, '%')))
+              and (:categoria = '' or c.slug = :categoria)
+              and (:situacao = 'TODOS'
+                   or (:situacao = 'ATIVOS' and p.ativo = true)
+                   or (:situacao = 'INATIVOS' and p.ativo = false))
+            """)
+    Page<ProdutoJpaEntity> buscarParaAdmin(@Param("busca") String busca,
+                                           @Param("categoria") String categoria,
+                                           @Param("situacao") String situacao,
+                                           Pageable pageable);
+
+    boolean existsByNomeIgnoreCase(String nome);
+
+    boolean existsByNomeIgnoreCaseAndIdNot(String nome, Long id);
+
+    boolean existsBySlug(String slug);
+
+    long countByAtivoTrueAndEstoque(int estoque);
 }
