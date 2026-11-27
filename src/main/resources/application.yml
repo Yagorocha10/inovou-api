@@ -35,3 +35,7 @@ inovou:
     senha: ${INOVOU_ADMIN_SENHA:admin12345}
   uploads:
     diretorio: ${INOVOU_UPLOADS_DIR:./uploads}
+  pix:
+    chave: ${INOVOU_PIX_CHAVE:}
+    nome-recebedor: ${INOVOU_PIX_NOME_RECEBEDOR:YAGO DA SILVA ROCHA}
+    cidade: ${INOVOU_PIX_CIDADE:BELEM}
